@@ -1,5 +1,5 @@
 
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterOutlet } from '@angular/router';
@@ -34,7 +34,10 @@ export class App implements OnInit {
 
   formulario = this.formularioVacio();
 
-  constructor(private http: HttpClient) {}
+  constructor(
+      private http: HttpClient,
+      private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
     this.cargarTickets();
@@ -51,22 +54,27 @@ export class App implements OnInit {
     };
   }
 
-  cargarTickets(): void {
+  
+cargarTickets(): void {
     this.cargando = true;
     this.mensajeError = '';
+    this.cdr.markForCheck();
 
     this.http.get<Ticket[]>(this.apiUrl).subscribe({
       next: (datos) => {
         this.tickets = datos;
         this.cargando = false;
+        this.cdr.markForCheck();
       },
       error: () => {
         this.mensajeError =
           'No se pudieron cargar los tickets. Comprueba que el backend esté funcionando.';
         this.cargando = false;
+        this.cdr.markForCheck();
       },
     });
-  }
+}
+
 
   contarEstado(estado: Ticket['estado']): number {
     return this.tickets.filter((ticket) => ticket.estado === estado).length;
